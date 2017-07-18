@@ -23,4 +23,5 @@ delete t.geometry;
 ```
 ##### 截图
 
-![image](https://raw.githubusercontent.com/ilongio/ilong/e9c7bd65b4c838f4aea08cf3db7d562dc8ddc87c/Screenshot.png)
+![image](https://github.com/Uisdo/UMapControl/blob/master/Screenshot1.png)
+![image](https://github.com/Uisdo/UMapControl/blob/master/Screenshot.png)
