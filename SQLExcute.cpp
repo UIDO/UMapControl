@@ -215,7 +215,7 @@ void SQLExcute::initLayer(QString id, QString name, QList<UM::Format> *typeList,
      * 一个表保存数据(数据表)
      * 一个表保存图元信息(信息表)
     */
-    QString sql = QString("INSERT INTO ILONGIOLAYER VALUES ( '%1', '%2', '%3', '%4' )").arg(id).arg(name).arg(1).arg(0);
+    QString sql = QString("INSERT INTO ILONGIOLAYER VALUES ( '%1', '%2', '%3', '%4' )").arg(id).arg(name).arg(1).arg(1);
     nonResult(sql, "initLayer1");
     /*
      * 读取表数据结构 并创建表 把结构保存在字段类型headType里,方便插入图元数据使用
