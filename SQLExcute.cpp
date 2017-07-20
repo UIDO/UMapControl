@@ -312,20 +312,6 @@ void SQLExcute::updateItemLimit(quint32 limit)
     nonResult(sql, "update limit ");
 }
 
-void SQLExcute::closeDB()
-{
-    QSqlDatabase db;
-    if(QSqlDatabase::contains("qt_sql_default_connection"))
-      db = QSqlDatabase::database("qt_sql_default_connection");
-    else
-      db = QSqlDatabase::addDatabase("QSQLITE");
-    if(db.isOpen())
-    {
-        db.commit();
-        db.close();
-    }
-}
-
 QString SQLExcute::dbPath()
 {
     return CONFIGPATH + "uisdo.com";

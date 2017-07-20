@@ -125,17 +125,6 @@ void UMapControl::zoomOut()
     }
 }
 
-void UMapControl::setDefaultLocation(QPointF worldCoordinate, quint8 zoomLevel)
-{
-    if(checkWorldCoordinate(worldCoordinate) && checkZoomLevel(zoomLevel))
-    {
-        defaultLocation = worldCoordinate;
-        currentLevel = zoomLevel;
-    }
-    sqlExcute.updateDefaultLoaction(defaultLocation,currentLevel);
-    zoomTo(defaultLocation,currentLevel);
-}
-
 QPointF UMapControl::getDefaultLocation()
 {
     return defaultLocation;

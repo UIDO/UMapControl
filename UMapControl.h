@@ -110,10 +110,7 @@ public:
     void zoomOut();
     /*
      * 设置默认的地图加载
-     * @worldCoordinate 位置
-     * @zoomLevel       地图等级
      * */
-    void setDefaultLocation(QPointF worldCoordinate, quint8 zoomLevel);
     QPointF getDefaultLocation();
     /*
      * 返回图层

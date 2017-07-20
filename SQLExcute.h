@@ -96,7 +96,6 @@ public:
     void updateGeoColor(QString layerId, quint32 geoID, QString field, QColor color);
     void updateDefaultLoaction(QPointF world = DEFAULTLOCATION, quint8 level = DEFAULTZOOMLEVEL);
     void updateItemLimit(quint32 limit);
-    void closeDB();
     QString dbPath();
     QSqlQuery * tilesCount();
     /*
