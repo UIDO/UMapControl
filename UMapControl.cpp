@@ -67,7 +67,6 @@ UMapControl::UMapControl(QWidget *parent) : QGraphicsView(parent),itemScale(1),
     QList <UM::Format> fm;
     fm << UM::Format{"NAME",UM::UMapT} << UM::Format{"VALUE",UM::UMapN};
     tempLayer = manager->addLayer("UISDO", &fm);
-    emit updateLayer();
 //    QList<QPointF> l;
 //    l.append(QPointF(99.7319,27.8306));
 //    l.append(QPointF(99.0115,27.6178));
