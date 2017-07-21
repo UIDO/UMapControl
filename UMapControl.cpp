@@ -391,16 +391,6 @@ bool UMapControl::viewportEvent(QEvent *event)
     return QGraphicsView::viewportEvent(event);
 }
 
-void UMapControl::drawBackground(QPainter *p, const QRectF &rect)
-{
-    Q_UNUSED(rect);
-    p->save();
-//    p->resetTransform();
-//    p->setRenderHint(QPainter::Antialiasing);
-//    p->drawPixmap(backgroundPos,background);
-    p->restore();
-}
-
 void UMapControl::drawForeground(QPainter *painter, const QRectF &rect)
 {
     Q_UNUSED(rect);

@@ -174,7 +174,6 @@ public:
 
 protected:
     bool viewportEvent(QEvent *event);
-    void drawBackground(QPainter *p, const QRectF &rect);
     void drawForeground(QPainter *painter, const QRectF &rect);
     void resizeEvent(QResizeEvent *event);
     void keyPressEvent(QKeyEvent *event);

@@ -78,7 +78,6 @@ typedef enum
     iGeoTri,     //三角
     //面类图元
     iGeoPolygon,//线段和平面
-    iGeoPix     //图像类
 } GeoType;
 
 //保存图元的边界
