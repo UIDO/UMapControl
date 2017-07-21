@@ -39,10 +39,7 @@ UMapControl::UMapControl(QWidget *parent) : QGraphicsView(parent),itemScale(1),
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy (Qt::ScrollBarAlwaysOff );
     setViewportUpdateMode(FullViewportUpdate);
-    centerOn(0,0);
-    //grabGesture(Qt::PinchGesture);
-    //viewport()->setAttribute(Qt::WA_AcceptTouchEvents);
-    //viewport()->grabGesture(Qt::PinchGesture);
+    viewport()->setAttribute(Qt::WA_AcceptTouchEvents);
     setSceneRect(viewport()->rect());
     /*
      * 处理刷新信号
@@ -67,13 +64,6 @@ UMapControl::UMapControl(QWidget *parent) : QGraphicsView(parent),itemScale(1),
     QList <UM::Format> fm;
     fm << UM::Format{"NAME",UM::UMapT} << UM::Format{"VALUE",UM::UMapN};
     tempLayer = manager->addLayer("UISDO", &fm);
-//    QList<QPointF> l;
-//    l.append(QPointF(99.7319,27.8306));
-//    l.append(QPointF(99.0115,27.6178));
-//    Geometry::ILongDataType tttt;
-//    tttt.geometry = new GeoPolygon(this,&l);
-//    tttt.data<<"xxx"<<0;
-//    tempLayer->addGeo(tttt);
 }
 
 UMapControl::~UMapControl()
@@ -296,6 +286,67 @@ bool UMapControl::viewportEvent(QEvent *event)
 {
     switch(event->type())
     {
+    case QEvent::TouchBegin:
+    case QEvent::TouchUpdate:
+    case QEvent::TouchEnd:
+    {
+        QTouchEvent *touchEvent = static_cast<QTouchEvent *>(event);
+        touchEvent->accept();
+        QList<QTouchEvent::TouchPoint> touchPoints = touchEvent->touchPoints();
+        if (touchPoints.count() == 1)
+        {
+            if (touchEvent->touchPointStates() & Qt::TouchPointPressed)
+            {
+                zoomOnPos = touchEvent->touchPoints().at(0).pos().toPoint();
+                QPointF point = mapToScene(zoomOnPos);
+                if (scene()->items(point).count() != 0)
+                {
+                    QList<QGraphicsItem *> l = scene()->items(point);
+                    for(int i= l.size() - 1; i>=0; i--)
+                    {
+                        Geometry * g = (Geometry *)l.at(i);
+                        QStringList nameList = g->objectName().split('_');
+                        if(g->objectName().isEmpty() || nameList.size() != 2)
+                        {
+                            l.removeOne(l.at(i));
+                            continue;
+                        }
+                        Layer * layer = manager->getLayerByID(nameList.at(0));
+                        if(!layer->isSelectable())
+                            l.removeOne(l.at(i));
+
+                    }
+                    emit sendItemList(l);
+                }
+            }
+            if (touchEvent->touchPointStates() & Qt::TouchPointMoved)
+            {
+                QPoint moveDelta = touchEvent->touchPoints().at(0).pos().toPoint() - zoomOnPos;
+                setSceneLocation(QPointF(sceneRect().x() - moveDelta.x(),sceneRect().y() - moveDelta.y()));
+                backgroundPos = backgroundPos + moveDelta;
+                zoomOnPos = touchEvent->touchPoints().at(0).pos().toPoint();
+            }
+            if (touchEvent->touchPointStates() & Qt::TouchPointReleased)
+            {
+                emit viewChangedSignal(true);
+            }
+        }
+        if (touchPoints.count() == 2)
+        {
+            setTransformationAnchor(QGraphicsView::AnchorViewCenter);
+            const QTouchEvent::TouchPoint &touchPoint0 = touchPoints.first();
+            const QTouchEvent::TouchPoint &touchPoint1 = touchPoints.last();
+            qreal currentScaleFactor =
+                    QLineF(touchPoint0.pos(), touchPoint1.pos()).length()
+                    / QLineF(touchPoint0.startPos(), touchPoint1.startPos()).length();
+            setTransform(QTransform().scale( currentScaleFactor,currentScaleFactor));
+            if (touchEvent->touchPointStates() & Qt::TouchPointReleased) {
+                resetMatrix();
+                currentScaleFactor>=1 ? zoomIn() : zoomOut();
+            }
+        }
+        return true;
+    }
     case QEvent::Wheel:
     {
         QWheelEvent * wheelEvent = static_cast<QWheelEvent *>(event);;
@@ -453,13 +504,15 @@ void UMapControl::keyPressEvent(QKeyEvent *event)
     switch (event->key()) {
     case Qt::Key_J:
     case Qt::Key_Z:
-    case Qt::Key_VolumeUp:
         zoomIn();
         break;
     case Qt::Key_K:
     case Qt::Key_X:
-    case Qt::Key_VolumeDown:
         zoomOut();
+        break;
+    case Qt::Key_VolumeUp:
+    case Qt::Key_VolumeDown:
+        emit doubleClicked(viewport()->rect().center());
         break;
     case Qt::Key_Up:
     case Qt::Key_W:

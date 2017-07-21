@@ -43,7 +43,7 @@
 #include <QWheelEvent>
 #include <QGestureEvent>
 #include <QMessageBox>
-#include <QPinchGesture>
+#include <QTouchEvent>
 #include <QThread>
 #include <QtMath>
 #include <QList>
