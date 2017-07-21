@@ -84,7 +84,7 @@ void Manager::removeLayer(QString name)
 void Manager::stopUpdateLayer()
 {
     isUpdate = false;
-    uMap->scene()->clear();
+    //uMap->scene()->clear();
 }
 
 void Manager::addTempItem(QPointF world, UM::GeoType type)

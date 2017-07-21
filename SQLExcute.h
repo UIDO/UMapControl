@@ -80,7 +80,7 @@ public:
      * 保存到自己的图层里,方便插入图元数据的时候判断数据类型而已,没想到更好的办法,用完了需要自己删除指针
      */
     QSqlQuery *checkType(QString id);
-    QSqlQuery *updateLayer(QString id, QPointF topLeft, QPointF rigthBottom, quint32 limit = 1000);
+    QSqlQuery *updateLayer(QString id);
     /*
      * 创建图层,@id是图层的id,用来做数据库里的表名,在class Layer里自动生成,
      * @name 图层名称,创建图层时需要自己指定一个名称,

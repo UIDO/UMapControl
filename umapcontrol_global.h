@@ -49,7 +49,6 @@ namespace UM {
 #endif
 
 #define PI 3.14159265358979323846264338327950288419717
-#define DEFAULTITEMLIMITPERLAYER 500
 #define DEFAULTTILESIZE 256
 #define MAXZOOMLEVEL 19
 #define MINZOOMLEVEL 1
@@ -78,7 +77,8 @@ typedef enum
     iGeoStar,    //星星
     iGeoTri,     //三角
     //面类图元
-    iGeoPolygon
+    iGeoPolygon,//线段和平面
+    iGeoPix     //图像类
 } GeoType;
 
 //保存图元的边界

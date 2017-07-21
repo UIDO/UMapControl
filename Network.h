@@ -84,7 +84,7 @@ private:
 signals:
     void startAgain();
     void sendTileCount(int);
-    void newImage();
+    void addPixGeo(QPointF world, QPixmap pm, quint32 z);
 public slots:
     void start();
     void requestFinished(QNetworkReply *reply);

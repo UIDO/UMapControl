@@ -62,6 +62,7 @@
 #include "GeoStar.h"
 #include "GeoTri.h"
 #include "GeoPolygon.h"
+#include "GeoPix.h"
 
 /*
  * 提供简单的跨平台的瓦片图层框架功能,反正不会C++,更不会面向对象,用来练activateWindow();手的!
@@ -135,11 +136,6 @@ public:
     QPointF worldToScene(QPointF world);
     QPointF sceneToWorld(QPointF scene);
     /*
-     * 设置或返回一个图层的最大图元个数@limit, 一个图层图元太多意义不大
-     * */
-    void setItemLimit(quint32 limit = DEFAULTITEMLIMITPERLAYER);
-    quint32 getItemLimit();
-    /*
      * 跳转到默认位置，可以通过setDefaultLocation设置位置，如果有GPS更新位置，默认位置为GPS当前位置
      * */
     void goToDefaultLocation();
@@ -175,7 +171,7 @@ public:
     /*
      * 提供从外部更新地图函数调用
      * */
-    void updateMap();
+
 protected:
     bool viewportEvent(QEvent *event);
     void drawBackground(QPainter *p, const QRectF &rect);
@@ -195,7 +191,7 @@ private:
     /*
      * 计算当前场景内的所有瓦片,并在数据库里查找,如果没找到就下载,如果找到了直接打印到场景背景图片里
      * */
-    void tilesUrlMatrix();
+    void tilesUrlMatrix(bool onlyBackground);
     /*
      * 缩放在指定的位置@world和指定的地图等级@zoomLevel
      * 因为默认是缩放在场景中心,所以加了个参数@underMouse限制缩放在鼠标下面
@@ -242,10 +238,6 @@ private:
     /*
      * 场景背景图片
      * */
-    QPixmap background;
-    /*
-     * 场景背景图片打印位置
-     * */
     QPoint backgroundPos;
     /*
      * @middle  场景中心的那张瓦片的坐标
@@ -283,7 +275,6 @@ private:
      * */
     QPointF currentPos;
 
-    quint32 itemLimit;
     /*
      * 保存鼠标按下后是否移动了,如果移动了就更新
      * */
@@ -314,7 +305,6 @@ private:
      * */
     bool hasGps;
     QPointF GPSLocation;
-    QMutex painMutex;
     double GPSSpeed;
 signals:
     void viewChangedSignal(bool);
@@ -325,12 +315,16 @@ signals:
     void updateLayer();
 public slots:
     void viewChangedSlot(bool onlyBackground);
-    void newImage();
     void updateTilesCount(int count);
     void updateLocationPos(QPointF world);
     void updateInfo(QPointF GPSPos , qreal speed, qreal dir, qreal altitude);//pos, speed, dir,altitude
     void updateSatellitesCount(int count);
     void addGeoToScene(Geometry * g);
+    void updateMap();
+    /*
+     * 直接加载图片到地图里,默认加载在最底层@z
+     * */
+    void addPixGeo(QPointF world, QPixmap pm, quint32 z);
 };
 
 #endif // UMAPCONTROL_H

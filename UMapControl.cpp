@@ -4,7 +4,7 @@
 UMapControl::UMapControl(QWidget *parent) : QGraphicsView(parent),itemScale(1),
     currentLevel(DEFAULTZOOMLEVEL),numberOfTiles(tilesOnZoomLevel(currentLevel)),
     defaultLocation(DEFAULTLOCATION),net(new Network(this)),
-    tilesCount(0),currentPos(DEFAULTLOCATION),itemLimit(DEFAULTITEMLIMITPERLAYER),
+    tilesCount(0),currentPos(DEFAULTLOCATION),
     satellitesCount(0),GPSAltitude(0),GPSDir(0),hasGps(false),GPSSpeed(0)
 {
     QSqlQuery * query = sqlExcute.getDefaultLoaction();
@@ -25,10 +25,6 @@ UMapControl::UMapControl(QWidget *parent) : QGraphicsView(parent),itemScale(1),
         {
             currentLevel = query->value(1).toInt();
             numberOfTiles= tilesOnZoomLevel(currentLevel);
-        }
-        if(fieldName == "LIMIT")
-        {
-            itemLimit = query->value(1).toInt();
         }
     }
     delete query;
@@ -57,7 +53,7 @@ UMapControl::UMapControl(QWidget *parent) : QGraphicsView(parent),itemScale(1),
      * 处理下载信号
      * */
     connect(this,SIGNAL(downloadImage()),net,SLOT(start()));
-    connect(net,SIGNAL(newImage()),this,SLOT(newImage()));
+    connect(net,SIGNAL(addPixGeo(QPointF,QPixmap,quint32)),this,SLOT(addPixGeo(QPointF,QPixmap,quint32)));
     connect(net,SIGNAL(sendTileCount(int)),this, SLOT(updateTilesCount(int)));
 
     manager->moveToThread(&updateThread);
@@ -71,6 +67,7 @@ UMapControl::UMapControl(QWidget *parent) : QGraphicsView(parent),itemScale(1),
     QList <UM::Format> fm;
     fm << UM::Format{"NAME",UM::UMapT} << UM::Format{"VALUE",UM::UMapN};
     tempLayer = manager->addLayer("UISDO", &fm);
+    emit updateLayer();
 //    QList<QPointF> l;
 //    l.append(QPointF(99.7319,27.8306));
 //    l.append(QPointF(99.0115,27.6178));
@@ -207,17 +204,6 @@ QPointF UMapControl::sceneToWorld(QPointF scene)
                                             radianToDegree(atan(sinh((1-scene.y()*(2./(numberOfTiles*DEFAULTTILESIZE)))*PI)))));
 }
 
-void UMapControl::setItemLimit(quint32 limit)
-{
-    itemLimit = limit;
-    sqlExcute.updateItemLimit(limit);
-}
-
-quint32 UMapControl::getItemLimit()
-{
-    return itemLimit;
-}
-
 void UMapControl::goToDefaultLocation()
 {
     zoomTo(defaultLocation,zoomLevel());
@@ -298,6 +284,14 @@ void UMapControl::updateMap()
     emit viewChangedSignal(false);
 }
 
+void UMapControl::addPixGeo(QPointF world, QPixmap pm, quint32 z)
+{
+    GeoPix * gp = new GeoPix(world,pm);
+    gp->setZValue(z);
+    gp->setPos(worldToScene(world));
+    scene()->addItem(gp);
+}
+
 
 bool UMapControl::viewportEvent(QEvent *event)
 {
@@ -359,7 +353,7 @@ bool UMapControl::viewportEvent(QEvent *event)
         {
 
             QPoint moveDelta = moveEvent->pos() - zoomOnPos;
-            scene()->clear();
+            //scene()->clear();
             setSceneLocation(QPointF(sceneRect().x() - moveDelta.x(),sceneRect().y() - moveDelta.y()));
             backgroundPos = backgroundPos + moveDelta;
             zoomOnPos = moveEvent->pos();
@@ -383,7 +377,7 @@ bool UMapControl::viewportEvent(QEvent *event)
         {
             if(releaseEvent->button() & Qt::LeftButton && zoomOnPos != QPoint(0,0) && mouseMove)
             {
-                emit viewChangedSignal(false);
+                emit viewChangedSignal(true);
                 zoomOnPos = QPoint(0,0);
                 releaseEvent->accept();
             }
@@ -401,9 +395,9 @@ void UMapControl::drawBackground(QPainter *p, const QRectF &rect)
 {
     Q_UNUSED(rect);
     p->save();
-    p->resetTransform();
-    p->setRenderHint(QPainter::Antialiasing);
-    p->drawPixmap(backgroundPos,background);
+//    p->resetTransform();
+//    p->setRenderHint(QPainter::Antialiasing);
+//    p->drawPixmap(backgroundPos,background);
     p->restore();
 }
 
@@ -515,7 +509,7 @@ int UMapControl::tilesOnZoomLevel(quint8 zoomLevel)
     return int(pow(2.0, zoomLevel));
 }
 
-void UMapControl::tilesUrlMatrix()
+void UMapControl::tilesUrlMatrix(bool onlyBackground)
 {
     quint8 offset = 1;
     QPointF sceneCenter = mapToScene(viewport()->rect().center());
@@ -525,9 +519,6 @@ void UMapControl::tilesUrlMatrix()
     leftTop = QPoint(leftTopDelta.x() / DEFAULTTILESIZE + offset,leftTopDelta.y() / DEFAULTTILESIZE + offset);
     int rightTiles = rightBottomDelta.x() / DEFAULTTILESIZE + offset;
     int bottomTiles = rightBottomDelta.y() / DEFAULTTILESIZE + offset;
-    background = QPixmap((leftTop.x() + rightTiles + offset) * DEFAULTTILESIZE,
-                         (leftTop.y() + bottomTiles + offset) * DEFAULTTILESIZE);
-    background.fill(QColor::fromRgb(236,236,236));
     backgroundPos = mapFromScene((-leftTop.x()+middle.x())*DEFAULTTILESIZE,
                                  (-leftTop.y()+middle.y())*DEFAULTTILESIZE);
     /*
@@ -544,6 +535,24 @@ void UMapControl::tilesUrlMatrix()
             }
 
         }
+    }
+    /*
+     * 删除背景图层
+     * */
+    if(onlyBackground)
+    {
+        QList <QGraphicsItem *> l =scene()->items(scene()->sceneRect());
+        for(int i=0;i<l.size();i++)
+        {
+            if(l.at(i)->zValue() == 0)
+            {
+                scene()->removeItem(l.at(i));
+            }
+        }
+    }
+    else
+    {
+        scene()->clear();
     }
     /*
      * 再从数据库里读取当前场景有效的瓦片,如果读取失败,直接把@tList里的所有坐标生成path保存到@list里,
@@ -573,15 +582,7 @@ void UMapControl::tilesUrlMatrix()
         //int z = query->value(2).toInt();
         QPixmap pm;
         pm.loadFromData(query->value(3).toByteArray());
-        if(painMutex.tryLock())
-        {
-            QPainter painter(&background);
-            painter.drawPixmap((x+leftTop.x()-middle.x())*DEFAULTTILESIZE
-                               ,(y+leftTop.y()-middle.y())*DEFAULTTILESIZE
-                               ,DEFAULTTILESIZE,DEFAULTTILESIZE,pm);
-            painter.end();
-            painMutex.unlock();
-        }
+        addPixGeo(sceneToWorld(QPointF(x*DEFAULTTILESIZE,y*DEFAULTTILESIZE)),pm,0);
         tList.removeOne(QPoint(x,y));
     }
     if(query)
@@ -646,7 +647,7 @@ void UMapControl::addGeoToScene(Geometry *g)
 void UMapControl::viewChangedSlot(bool onlyBackground)
 {
     manager->stopUpdateLayer();
-    tilesUrlMatrix();
+    tilesUrlMatrix(onlyBackground);
     if(!updateThread.isRunning())
         updateThread.start();
     if(onlyBackground)
@@ -657,11 +658,6 @@ void UMapControl::viewChangedSlot(bool onlyBackground)
      * 本来要退出的时候再保存的，但是发在手机上没用
      * */
      sqlExcute.updateDefaultLoaction(centerPos,currentLevel);
-}
-
-void UMapControl::newImage()
-{
-    viewport()->update();
 }
 
 void UMapControl::updateTilesCount(int count)

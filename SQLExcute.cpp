@@ -198,12 +198,9 @@ QSqlQuery *SQLExcute::checkType(QString id)
     return getResult(sql,"checkType " + id);
 }
 
-QSqlQuery *SQLExcute::updateLayer(QString id, QPointF topLeft, QPointF rigthBottom, quint32 limit)
+QSqlQuery *SQLExcute::updateLayer(QString id)
 {
-    QString t = QString("NOT ( MINX > %1 OR MAXX < %2 OR MINY > %3 OR MAXY < %4 )")
-            .arg(rigthBottom.x()).arg(topLeft.x()).arg(topLeft.y()).arg(rigthBottom.y());
-    QString sql = QString("SELECT * FROM '%1INFO' WHERE %2 GROUP BY RANDOM() LIMIT 0,%3")
-            .arg(id).arg(t).arg(limit);
+    QString sql = QString("SELECT * FROM '%1INFO'").arg(id);
     return getResult(sql,"updat layer");
 }
 

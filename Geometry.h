@@ -65,7 +65,7 @@ public:
         Geometry * geometry;    //图元
         QList<QVariant> data;   //一行数据放到data列表里
     } DataType;
-    explicit Geometry(UM::GeoType gType,quint8 lWidth, QColor iPen, QColor iBrush);
+    explicit Geometry(UM::GeoType gType,quint8 lWidth, QColor iPen = QColor(Qt::red), QColor iBrush=QColor(Qt::yellow));
     UM::UmapGeoRect getRect();
     UM::GeoType getGeoType();
     QPointF getCenter();

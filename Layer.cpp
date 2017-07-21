@@ -107,10 +107,7 @@ void Layer::updatLayer(bool *isUpdate)
     list.clear();
     if(!*isUpdate)
         return;
-    QPointF leftTop = uMap->sceneToWorld(uMap->mapToScene(QPoint(0,0)));
-    QPointF rightBottom = uMap->sceneToWorld(uMap->mapToScene(QPoint(uMap->viewport()->width(),
-                                                                       uMap->viewport()->height())));
-    QSqlQuery * query =sqlExcute->updateLayer(layerID,leftTop,rightBottom, uMap->getItemLimit());
+    QSqlQuery * query =sqlExcute->updateLayer(layerID);
     while(query->next() && *isUpdate)
     {
         int type = query->value(1).toInt();
@@ -140,6 +137,7 @@ void Layer::updatLayer(bool *isUpdate)
         }
         if(g && *isUpdate)
         {
+            g->setZValue(1);
             if(type == UM::iGeoPolygon)
             {
                 g->setPos(uMap->worldToScene(QPointF(g->getRect().minX,g->getRect().maxY)));

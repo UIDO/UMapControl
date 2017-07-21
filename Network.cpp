@@ -99,20 +99,12 @@ void Network::requestFinished(QNetworkReply *reply)
              * */
             if(t.z == uMap->zoomLevel())
             {
-                QPoint middle = uMap->middle;
-                QPoint leftTop = uMap->leftTop;
-                int x = (t.x+leftTop.x()-middle.x())*DEFAULTTILESIZE;
-                int y = (t.y+leftTop.y()-middle.y())*DEFAULTTILESIZE;
-                if(x>=0 && x<uMap->background.width() && y >=0 && y < uMap->background.height())
+                QPointF br = uMap->mapToScene(QPoint(uMap->width(),uMap->height()));
+                int x = t.x*DEFAULTTILESIZE;
+                int y = t.y*DEFAULTTILESIZE;
+                if(t.x>=uMap->leftTop.x() && x<br.x() && y >=t.y && y < br.y())
                 {
-                    if(uMap->painMutex.tryLock())
-                    {
-                        QPainter p(&uMap->background);
-                        p.drawPixmap(x,y,DEFAULTTILESIZE,DEFAULTTILESIZE,pm);
-                        p.end();
-                        uMap->painMutex.unlock();
-                    }
-                    emit newImage();
+                    emit addPixGeo(uMap->sceneToWorld(QPointF(x,y)),pm,0);
                 }
             }
             /*
