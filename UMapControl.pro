@@ -26,7 +26,7 @@ SOURCES += UMapControl.cpp \
     GeoStar.cpp \
     GeoTri.cpp \
     GeoPolygon.cpp \
-    GeoPix.cpp
+    MapPix.cpp
 
 HEADERS += UMapControl.h\
         umapcontrol_global.h \
@@ -43,7 +43,7 @@ HEADERS += UMapControl.h\
     GeoStar.h \
     GeoTri.h \
     GeoPolygon.h \
-    GeoPix.h
+    MapPix.h
 
 unix {
     target.path = /usr/lib

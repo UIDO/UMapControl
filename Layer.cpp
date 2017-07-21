@@ -94,6 +94,7 @@ void Layer::addGeo(Geometry::DataType data)
 void Layer::addGeos(QList<Geometry::DataType> *dataList)
 {
     sqlExcute->addItems(dataList,layerID, &headType);
+    emit uMap->updateMap();
 }
 
 QList<Geometry *> * Layer::getItems()
@@ -137,7 +138,12 @@ void Layer::updatLayer(bool *isUpdate)
         }
         if(g && *isUpdate)
         {
-            g->setZValue(1);
+            /*
+             * 图层顺序不能影响临时图层放在第二层，第三层用来保存GPS位置，
+             * 所有图层放到第一层，受到刷新顺序的影响
+             * 第0层是背景层
+             * */
+            g->setZValue(getLayerName() == "UISDO" ? 2 : 1);
             if(type == UM::iGeoPolygon)
             {
                 g->setPos(uMap->worldToScene(QPointF(g->getRect().minX,g->getRect().maxY)));
@@ -163,21 +169,25 @@ void Layer::updatLayer(bool *isUpdate)
 void Layer::setLabel(QString field)
 {
     sqlExcute->setLabel(layerID, field);
+    uMap->updateMap();
 }
 
 void Layer::updateGeoPenColor(quint32 geoID, QColor c)
 {
     sqlExcute->updateGeoColor(this->getLayerID(),geoID,"PEN",c);
+    uMap->updateMap();
 }
 
 void Layer::updateGeoBrushColor(quint32 geoID, QColor c)
 {
     sqlExcute->updateGeoColor(this->getLayerID(),geoID,"BRUSH",c);
+    uMap->updateMap();
 }
 
 void Layer::removeGeo(QString itemID)
 {
     sqlExcute->removeItem(getLayerID(), itemID);
+    uMap->updateMap();
 }
 
 
@@ -200,6 +210,7 @@ void Layer::setVisible(bool b)
 {
     visible = b;
     sqlExcute->setLayerVisible(layerID, b);
+    uMap->updateMap();
 }
 
 bool Layer::isVisible()
@@ -211,6 +222,7 @@ void Layer::setSelectable(bool b)
 {
     selectable = b;
     sqlExcute->setLayerSelectable(layerID, b);
+    uMap->updateMap();
 }
 
 bool Layer::isSelectable()

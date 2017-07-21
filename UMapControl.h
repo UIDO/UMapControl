@@ -62,7 +62,7 @@
 #include "GeoStar.h"
 #include "GeoTri.h"
 #include "GeoPolygon.h"
-#include "GeoPix.h"
+#include "MapPix.h"
 
 /*
  * 提供简单的跨平台的瓦片图层框架功能,反正不会C++,更不会面向对象,用来练activateWindow();手的!

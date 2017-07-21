@@ -286,7 +286,7 @@ void UMapControl::updateMap()
 
 void UMapControl::addPixGeo(QPointF world, QPixmap pm, quint32 z)
 {
-    GeoPix * gp = new GeoPix(world,pm);
+    MapPix * gp = new MapPix(pm);
     gp->setZValue(z);
     gp->setPos(worldToScene(world));
     scene()->addItem(gp);

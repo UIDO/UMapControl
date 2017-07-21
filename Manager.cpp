@@ -77,47 +77,48 @@ void Manager::removeLayer(QString name)
             list.removeOne(l);
             delete l;
         }
-        updatLayer();
+        uMap->updateMap();
     }
 }
 
 void Manager::stopUpdateLayer()
 {
     isUpdate = false;
-    //uMap->scene()->clear();
 }
 
 void Manager::addTempItem(QPointF world, UM::GeoType type)
 {
+    if(tempGeo)
+        uMap->scene()->removeItem(tempGeo);
     qsrand(QDateTime::currentDateTime().time().second());
     tempGeoType = type;
     tempGeoWorldPos = world;
     QColor pen = QColor(qrand()%255,qrand()%255,qrand()%255);
-    Geometry * g = nullptr;
     switch (tempGeoType) {
     case UM::iGeoCircle:
-        g = new GeoCircle(tempGeoWorldPos,40,pen,pen);
+        tempGeo = new GeoCircle(tempGeoWorldPos,40,pen,pen);
         break;
     case UM::iGeoRect:
-        g = new GeoRect(tempGeoWorldPos,40,pen,pen);
+        tempGeo = new GeoRect(tempGeoWorldPos,40,pen,pen);
         break;
     case UM::iGeoPie:
-        g = new GeoPie(tempGeoWorldPos,80,0,pen,pen);
+        tempGeo = new GeoPie(tempGeoWorldPos,80,0,pen,pen);
         break;
     case UM::iGeoStar:
-        g = new GeoStar(tempGeoWorldPos,40,pen,pen);
+        tempGeo = new GeoStar(tempGeoWorldPos,40,pen,pen);
         break;
     case UM::iGeoTri:
-        g = new GeoTri(tempGeoWorldPos,40,pen,pen);
+        tempGeo = new GeoTri(tempGeoWorldPos,40,pen,pen);
         break;
     default:
         break;
     }
-    if(g)
+    if(tempGeo)
     {
-        g->setPos(uMap->worldToScene(tempGeoWorldPos));
-        g->setScale(uMap->itemScale);
-        emit addGeoToScene(g);
+        tempGeo->setPos(uMap->worldToScene(tempGeoWorldPos));
+        tempGeo->setScale(uMap->itemScale);
+        tempGeo->setZValue(3);
+        emit addGeoToScene(tempGeo);
     }
 }
 
@@ -144,6 +145,7 @@ bool Manager::moveLayer(QString name, bool up)
 
 void Manager::updatLayer()
 {
+    tempGeo = nullptr;
     isUpdate = true;
     for(int i=0; i<list.size() && isUpdate; i++)
     {

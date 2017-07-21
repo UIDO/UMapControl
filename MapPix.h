@@ -1,16 +1,19 @@
-#ifndef GEOPIX_H
-#define GEOPIX_H
+#ifndef MAPPIX_H
+#define MAPPIX_H
 
 #include <QObject>
-#include "Geometry.h"
+#include <QGraphicsObject>
+#include <QPainter>
+#include "umapcontrol_global.h"
+
 namespace UM {
-class GeoPix;
+class MapPix;
 }
-class UMAPCONTROLSHARED_EXPORT GeoPix : public Geometry
+class UMAPCONTROLSHARED_EXPORT MapPix : public QGraphicsObject
 {
     Q_OBJECT
 public:
-    explicit GeoPix(QPointF world,QPixmap pix);
+    explicit MapPix(QPixmap pix);
 protected:
     QRectF boundingRect() const Q_DECL_OVERRIDE;
     QPainterPath shape() const Q_DECL_OVERRIDE;
@@ -22,4 +25,4 @@ private:
     QPixmap background;
 };
 
-#endif // GEOPIX_H
+#endif // MAPPIX_H

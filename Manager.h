@@ -93,6 +93,7 @@ private:
 
     QPointF tempGeoWorldPos;
     UM::GeoType tempGeoType;
+    Geometry * tempGeo;
 signals:
     void addGeoToScene(Geometry *);
 public slots:
