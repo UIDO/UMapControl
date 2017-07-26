@@ -74,6 +74,7 @@ public:
     void stopUpdateLayer();
     void addTempItem(QPointF world, UM::GeoType type = UM::iGeoCircle);
     bool moveLayer(QString name, bool up = true);
+    void resetTempGeo();
 private:
     /*
      * 检查图层名称@name是否在图层管理表里,如果有,就自动在@name后面加*号,暂时这样处理导入多个同名图层
@@ -90,9 +91,6 @@ private:
     QList<Layer *> list;
     SQLExcute * sqlExcute;
     bool isUpdate;
-
-    QPointF tempGeoWorldPos;
-    UM::GeoType tempGeoType;
     Geometry * tempGeo;
 signals:
     void addGeoToScene(Geometry *);

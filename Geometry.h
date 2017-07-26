@@ -81,6 +81,7 @@ public:
     void setLabel(QString lb);
     QString getLabel();
     int getLabelPixeSize();
+    void setTempColor(QColor c);
 protected:
     void checkRect();
     QList<QPointF> list;

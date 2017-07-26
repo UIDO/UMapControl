@@ -103,6 +103,13 @@ int Geometry::getLabelPixeSize()
     return lb.fontMetrics().width(label);
 }
 
+void Geometry::setTempColor(QColor c)
+{
+    brush = c;
+    pen = c;
+    update();
+}
+
 void Geometry::checkRect()
 {
     if(list.size() == 0)

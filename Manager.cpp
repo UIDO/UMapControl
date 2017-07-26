@@ -1,7 +1,8 @@
 #include "Manager.h"
 
-Manager::Manager(UMapControl *iL, QObject *parent) : QObject(parent),uMap(iL),sqlExcute(&iL->sqlExcute)
+Manager::Manager(UMapControl *iL, QObject *parent) : QObject(parent),uMap(iL),sqlExcute(&iL->sqlExcute),tempGeo(0)
 {
+    qsrand(QDateTime::currentDateTime().time().second());
     QSqlQuery * query = sqlExcute->initLayerManager();
     while(query->next())
     {
@@ -88,37 +89,37 @@ void Manager::stopUpdateLayer()
 
 void Manager::addTempItem(QPointF world, UM::GeoType type)
 {
-    if(tempGeo)
-        uMap->scene()->removeItem(tempGeo);
-    qsrand(QDateTime::currentDateTime().time().second());
-    tempGeoType = type;
-    tempGeoWorldPos = world;
     QColor pen = QColor(qrand()%255,qrand()%255,qrand()%255);
-    switch (tempGeoType) {
-    case UM::iGeoCircle:
-        tempGeo = new GeoCircle(tempGeoWorldPos,40,pen,pen);
-        break;
-    case UM::iGeoRect:
-        tempGeo = new GeoRect(tempGeoWorldPos,40,pen,pen);
-        break;
-    case UM::iGeoPie:
-        tempGeo = new GeoPie(tempGeoWorldPos,80,0,pen,pen);
-        break;
-    case UM::iGeoStar:
-        tempGeo = new GeoStar(tempGeoWorldPos,40,pen,pen);
-        break;
-    case UM::iGeoTri:
-        tempGeo = new GeoTri(tempGeoWorldPos,40,pen,pen);
-        break;
-    default:
-        break;
-    }
-    if(tempGeo)
+    if(!tempGeo)
     {
-        tempGeo->setPos(uMap->worldToScene(tempGeoWorldPos));
+        switch (type) {
+        case UM::iGeoCircle:
+            tempGeo = new GeoCircle(world,40,pen,pen);
+            break;
+        case UM::iGeoRect:
+            tempGeo = new GeoRect(world,40,pen,pen);
+            break;
+        case UM::iGeoPie:
+            tempGeo = new GeoPie(world,80,0,pen,pen);
+            break;
+        case UM::iGeoStar:
+            tempGeo = new GeoStar(world,40,pen,pen);
+            break;
+        case UM::iGeoTri:
+            tempGeo = new GeoTri(world,40,pen,pen);
+            break;
+        default:
+            break;
+        }
+        tempGeo->setPos(uMap->worldToScene(world));
         tempGeo->setScale(uMap->itemScale);
         tempGeo->setZValue(3);
         emit addGeoToScene(tempGeo);
+    }
+    else
+    {
+        tempGeo->setTempColor(pen);
+        tempGeo->setPos(uMap->worldToScene(world));
     }
 }
 
@@ -143,9 +144,13 @@ bool Manager::moveLayer(QString name, bool up)
     return true;
 }
 
-void Manager::updatLayer()
+void Manager::resetTempGeo()
 {
     tempGeo = nullptr;
+}
+
+void Manager::updatLayer()
+{
     isUpdate = true;
     for(int i=0; i<list.size() && isUpdate; i++)
     {
@@ -154,7 +159,6 @@ void Manager::updatLayer()
             list.at(i)->updatLayer(&isUpdate);
         }
     }
-    addTempItem(tempGeoWorldPos,tempGeoType);
     this->thread()->exit();
 }
 

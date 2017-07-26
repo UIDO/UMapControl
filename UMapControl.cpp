@@ -589,12 +589,14 @@ void UMapControl::tilesUrlMatrix(bool onlyBackground)
             if(l.at(i)->zValue() == 0)
             {
                 scene()->removeItem(l.at(i));
+                delete l.at(i);
             }
         }
     }
     else
     {
         scene()->clear();
+        manager->resetTempGeo();
     }
     /*
      * 再从数据库里读取当前场景有效的瓦片,如果读取失败,直接把@tList里的所有坐标生成path保存到@list里,
